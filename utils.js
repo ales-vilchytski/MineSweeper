@@ -19,15 +19,19 @@ function FSM(initialState) {
 		if (!transitions[fromState]) { 
 			transitions[fromState] = new Object(); 
 		}
-		transitions[fromState][toState] = func;
+		if (!transitions[fromState][toState]) {
+			transitions[fromState][toState] = new Array();
+		}		
+		transitions[fromState][toState].push(func);
 	}
 	
 	this.changeState = function(newState) {
 		var state = currentState;
 		currentState = newState;
-		var f = transitions[state][newState];
-		f();
-		
+		var funcs = transitions[state][newState];
+		for (var i in funcs) {
+			funcs[i]();
+		}
 	}
 	
 	this.debug = function() {
@@ -39,16 +43,14 @@ function FSM(initialState) {
 	}
 }
 
-function visitNeighbourCells(cellsArray, x, y, callback) {
-	for (var i = x - 1; i <= x + 1; ++i) {
-		for (var j = y - 1; j <= y + 1; ++j) {
-			if (i == x && j == y) {
-				continue;
-			} else {
-				if (i >= 0 && i < cellsArray.length &&
-					j >= 0 && j < cellsArray[i].length) {
-					callback(cellsArray[i][j], i, j);
-				}
+function visitNeighbourCells(cellsArray, xx, yy, callback) {
+	var x = Number(xx), y = Number(yy);
+	for (var i = x - 2; ++i <= x + 1; ) {
+		for (var j = y - 2; ++j <= y + 1; ) {
+			if (i >= 0 && i < cellsArray.length &&
+				(j >= 0 && j < cellsArray[i].length) &&
+				!(i === x && j === y)) {
+				callback(cellsArray[i][j], i, j);
 			}
 		}
 	}

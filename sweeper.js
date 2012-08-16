@@ -30,6 +30,7 @@ function Sweeper(x, y, mines, _ui) {
 	
 	var cells = new Array();
 	this.getCells = function() { return cells; }
+
 	//generate cells
 	{
 		var minesMap = new Array();
@@ -77,7 +78,7 @@ function Sweeper(x, y, mines, _ui) {
 					var count = 0;
 					visitNeighbourCells(cells, i, j, 
 						function(cell, x, y) {
-							if (cell.content == Content.MINE) { 
+							if (cell.content === Content.MINE) { 
 								++count;
 							}
 						});
@@ -97,7 +98,7 @@ function Sweeper(x, y, mines, _ui) {
 				ui.refreshCell(cells[i][j], i, j);
 				clearInterval(interval);
 			}
-		}
+		}		
 	};
 	stateManager.addTransition(State.RUNNING, State.GAME_OVER, finishGame);
 	stateManager.addTransition(State.BEGIN, State.GAME_OVER, finishGame);
@@ -110,7 +111,6 @@ function Sweeper(x, y, mines, _ui) {
 	});
 	stateManager.addTransition(State.RUNNING, State.FINISH, 
 		function() {
-			alert('finish');
 			finishGame();
 			minesRemained = 0;
 			ui.refreshMinesRemained(minesRemained);
@@ -122,25 +122,25 @@ function Sweeper(x, y, mines, _ui) {
 		cells[x][y].clicked = true;
 		ui.refreshCell(cells[x][y], x, y);
 		--notClickedCells;
-	}
+	};
 	
 	//click and mark cell actions	
 	var checkClickPreconditions = function(x, y) {
-		if (stateManager.getCurrentState() == State.GAME_OVER ||
-			stateManager.getCurrentState() == State.FINISH ||
+		if (stateManager.getCurrentState() === State.GAME_OVER ||
+			stateManager.getCurrentState() === State.FINISH ||
 			cells[x][y].clicked) {
 			return false;
 		} else {
 			return true;
 		}
-	}
+	};
 	
 	
 	var _clickCell = function(x, y) { //workaround to make recursive call of this function
 		if (!checkClickPreconditions(x, y)) {
 			return;
 		}
-		if (stateManager.getCurrentState() == State.BEGIN) {
+		if (stateManager.getCurrentState() === State.BEGIN) {
 			stateManager.changeState(State.RUNNING);
 		}
 		
@@ -148,28 +148,26 @@ function Sweeper(x, y, mines, _ui) {
 		if (mark == Mark.FLAG) { 
 			return; 
 		}
-
+	
 		doClickCell(x, y);
 		
 		var content = cells[x][y].content;
-		if (content == Content.MINE) {
+		if (content === Content.MINE) {
 			stateManager.changeState(State.GAME_OVER);
-		} else if (stateManager.getCurrentState() == State.RUNNING &&
-			notClickedCells == mines) {
+		} else if (stateManager.getCurrentState() === State.RUNNING &&
+			notClickedCells === mines) {
 			stateManager.changeState(State.FINISH);
-		} else if (content == Content.NONE) {
+		} else if (content === Content.NONE) {
 			visitNeighbourCells(cells, x, y, 
-				function(cell, i, j) {
-					if (!cell.clicked) {
-						_clickCell(i, j);
-					}
-				});		
-		} 
-	}
+				function(cell, m, n) {
+					_clickCell(m, n);
+				});
+		}
+	};
 	this.clickCell = _clickCell;
 	
 	var minesRemained = mines;
-	this.minesRemained = function() { return minesRemained; }
+	this.minesRemained = function() { return minesRemained; };
 	
 	this.markCell = function(x, y) {
 		if (!checkClickPreconditions(x, y)) {
@@ -196,7 +194,7 @@ function Sweeper(x, y, mines, _ui) {
 		}
 		
 		ui.refreshCell(cell, x, y);
-	}
+	};
 
 	ui.show(cells, minesRemained, seconds);
 	
@@ -204,5 +202,15 @@ function Sweeper(x, y, mines, _ui) {
 		if (interval) {
 			clearInterval(interval);
 		}
-	}
+	};
+	
+	this.debug = function() {
+		var cellsStr = '';
+		for (var i in cells) {
+			cellsStr += '\n';
+			for (var j in cells[i]) {
+				cellsStr += cells[i][j].content + '|';
+			}
+		}
+	};
 }
