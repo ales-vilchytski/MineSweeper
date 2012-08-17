@@ -95,15 +95,18 @@ function Sweeper(x, y, mines, _ui) {
 	var finishGame = function() { 
 		for (var i in cells) {
 			for (var j in cells[i]) {
-				ui.refreshCell(cells[i][j], i, j);
-				clearInterval(interval);
+				ui.refreshCell(cells[i][j], i, j);		
 			}
-		}		
+		}
+		clearInterval(interval);		
 	};
+	
 	stateManager.addTransition(State.RUNNING, State.GAME_OVER, finishGame);
 	stateManager.addTransition(State.BEGIN, State.GAME_OVER, finishGame);
+	
 	var interval;
 	var seconds = 0;
+	
 	this.getSeconds = function() { return seconds; }
 	stateManager.addTransition(State.BEGIN, State.RUNNING, 
 		function() {
@@ -150,12 +153,13 @@ function Sweeper(x, y, mines, _ui) {
 		}
 	
 		doClickCell(x, y);
-		
+			
 		var content = cells[x][y].content;
 		if (content === Content.MINE) {
 			stateManager.changeState(State.GAME_OVER);
-		} else if (stateManager.getCurrentState() === State.RUNNING &&
-			notClickedCells === mines) {
+		} else if ((stateManager.getCurrentState() === State.RUNNING ||
+				    stateManager.getCurrentState() === State.BEGIN) &&
+				   notClickedCells == mines) {
 			stateManager.changeState(State.FINISH);
 		} else if (content === Content.NONE) {
 			visitNeighbourCells(cells, x, y, 
