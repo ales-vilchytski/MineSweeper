@@ -21,10 +21,16 @@ var Mark = new Enum ([
 ]);
 
 //class Sweeper
-function Sweeper(x, y, mines, _ui) {	
-	var mines = mines;
-	var x = x;
-	var y = y;
+function Sweeper(_x, _y, _mines, _ui) {	
+	var x = (_x > 5) ? (_x) : (5);
+	var y = (_y > 5) ? (_y) : (5);
+	var mines = (_mines > 1) ? ( (_mines < x * y) ? (_mines) : (x * y - 1) ) 
+							 : (1);
+	
+	this.getX = function() { return x; };
+	this.getY = function() { return y; };
+	this.getMines = function() { return mines; };
+	
 	var ui = _ui;
 	ui.setSweeper(this);
 	
@@ -91,33 +97,36 @@ function Sweeper(x, y, mines, _ui) {
 	
 	var stateManager = new FSM(State.BEGIN);
 	this.getStateManager = function() { return stateManager; }
-	//initialize state manager with transitions
-	var finishGame = function() { 
-		for (var i in cells) {
-			for (var j in cells[i]) {
-				ui.refreshCell(cells[i][j], i, j);		
-			}
-		}
-		clearInterval(interval);		
-	};
-	
-	stateManager.addTransition(State.RUNNING, State.GAME_OVER, finishGame);
-	stateManager.addTransition(State.BEGIN, State.GAME_OVER, finishGame);
-	
+			
 	var interval;
 	var seconds = 0;
-	
 	this.getSeconds = function() { return seconds; }
-	stateManager.addTransition(State.BEGIN, State.RUNNING, 
-		function() {
-			interval = setInterval(function() { ui.refreshSeconds(++seconds); }, 1000);
-	});
-	stateManager.addTransition(State.RUNNING, State.FINISH, 
-		function() {
-			finishGame();
-			minesRemained = 0;
-			ui.refreshMinesRemained(minesRemained);
-	});
+		
+	//initialize state manager with transitions
+	{
+		var finishGame = function() { 
+			for (var i in cells) {
+				for (var j in cells[i]) {
+					ui.refreshCell(cells[i][j], i, j);		
+				}
+			}
+			clearInterval(interval);		
+		};
+		stateManager.addTransition(State.RUNNING, State.GAME_OVER, finishGame);
+		stateManager.addTransition(State.BEGIN, State.GAME_OVER, finishGame);
+		
+		stateManager.addTransition(State.BEGIN, State.RUNNING, 
+			function() {
+				interval = setInterval(function() { ui.refreshSeconds(++seconds); }, 1000);
+		});
+		stateManager.addTransition(State.RUNNING, State.FINISH, 
+			function() {
+				finishGame();
+				minesRemained = 0;
+				ui.refreshMinesRemained(minesRemained);
+		});
+	}
+	//end initialize state manager
 	
 	var notClickedCells = x * y;
 	
@@ -139,7 +148,7 @@ function Sweeper(x, y, mines, _ui) {
 	};
 	
 	
-	var _clickCell = function(x, y) { //workaround to make recursive call of this function
+	var _clickCell = function(x, y) { 
 		if (!checkClickPreconditions(x, y)) {
 			return;
 		}
@@ -168,7 +177,7 @@ function Sweeper(x, y, mines, _ui) {
 				});
 		}
 	};
-	this.clickCell = _clickCell;
+	this.clickCell = _clickCell;	//make _clickCell public
 	
 	var minesRemained = mines;
 	this.minesRemained = function() { return minesRemained; };
