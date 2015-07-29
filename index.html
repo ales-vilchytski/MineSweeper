@@ -38,6 +38,8 @@ function UI() {
 			}
 			$("#field").append('</tr>');
 		}
+        $("#field").css('width', ((Number(j) + 1)*2) + 'em');
+        $("#field").css('height', ((Number(i) + 1)*2) + 'em');
 		this.refreshMinesRemained(minesRemained);
 		this.refreshSeconds(seconds);
 	};
@@ -280,13 +282,14 @@ function Game() {
 
 	var addScore = function(score) {
 		if (score < scores[scores.length - 1].score) { 
-			return;
-		}
-		var name = prompt("Congratulations! Your score is " + score + ".\nPlease enter your name for history:");
-		if (name == null || name == '') {
-			name = 'Anonymous';
-		}
-		scores.push(new Score(name, score));
+			alert("Your score is " + score);
+		} else {
+            var name = prompt("Congratulations! Your score is " + score + ".\nPlease enter your name for history:");
+            if (name == null || name == '') {
+                name = 'Anonymous';
+            }
+            scores.push(new Score(name, score));
+        }
 	};
 	
 	var refreshScores = function() {
@@ -299,7 +302,15 @@ function Game() {
 }
 
 var game;
+var MIN_X = 5, MAX_X = 50,
+    MIN_Y = 5, MAX_Y = 50,
+    MIN_MINES = 1, MAX_MINES = 2000;
+    
 $(document).ready(function(){
+    $('#constraint_rows_label').html("(" + MIN_X + " - " + MAX_X + ")");
+    $('#constraint_cols_label').html("(" + MIN_Y + " - " + MAX_Y + ")");
+    $('#constraint_mines_label').html("(" + MIN_MINES + " - " + MAX_MINES + ")");
+
 	game = new Game();
 	game.newGame();
 });
@@ -320,9 +331,9 @@ function saveSettings() {
 	var mines = Number($('#minesCount').attr('value'));
 	
 	if (isNaN(x) || isNaN(y) || isNaN(mines) ||
-		x < 5 || y < 5 || mines < 1 ||
-		x > 50 || y > 50 || mines > 2000) {
-		alert('wrong settings');
+		x < MIN_X || y < MIN_Y || mines < MIN_MINES ||
+		x > MAX_X || y > MAX_Y || mines > MAX_MINES) {
+		alert('Wrong settings');
 		return;
 	} else {
 		game.saveSettings(x, y, mines);	
@@ -347,44 +358,45 @@ function cancelSettings() {
 body { background-color:azure; }
 .field 
 {
-	border-left: solid 3px grey;
-	border-top: solid 3px grey;
-	border-right: solid 3px gainsboro;
-	border-bottom: solid 3px gainsboro;
+    table-layout: fixed;
+	border-left: solid 0.175em grey;
+	border-top: solid 0.175em grey;
+	border-right: solid 0.175em gainsboro;
+	border-bottom: solid 0.175em gainsboro;
 	border-spacing: 0px;
-	font-size: 20px; 
+	font-size: 1.5em; 
 	font-family: 'Arial';
 	font-weight: bold;
 }
-.field tr {	height: 36px; }
+.field tr {	height: 2em; }
 .cell
 {
-	width:30px; height:30px; 
-	border-left: solid 3px gainsboro;
-	border-top: solid 3px gainsboro;
-	border-right: solid 3px grey;
-	border-bottom: solid 3px grey;
+	width:1.7em;
+	border-left: solid 0.15em gainsboro;
+	border-top: solid 0.15em gainsboro;
+	border-right: solid 0.15em grey;
+	border-bottom: solid 0.15em grey;
 	background-color: silver; 
 }
 .clickedCell 
 {
-	width:34px; height:34px; 
-	border: dotted 1px grey;
+	width:1.85em;
+	border: dotted 0.08em grey;
 	background-color: white;
 }
 .cell img, .clickedCell img 
 {
-	width:28px; 
-	height:28px; 
+	width:1.5em; 
+	height:1.5em; 
 	vertical-align: middle 
 }
 .infoBar 
 {
-	height: 25px; 
+	height: 2em; 
 	vertical-align: middle; 
-	font-size: 20px 
+	font-size: 1.6em 
 }
-.infoBar img { width: 20px; height: 20px; }
+.infoBar img { width: 1.6em; height: 1.6em; }
 </style>
 
 </head>
@@ -392,18 +404,18 @@ body { background-color:azure; }
 
 <table id='gameContainer'>
 	<tr>
-		<td><button id='newGame' type='button' onclick='game.newGame()'>New game</button></td>
-		<td colspan='2'><button id='settings' type='button' onclick='showSettingsDialog()'>Settings</button></td>
+		<td colspan='2'><button id='newGame' type='button' onclick='game.newGame()'>New game</button>&nbsp;<button id='settings' type='button' onclick='showSettingsDialog()'>Settings</button></td>
+		<td></td>
 	</tr>
 	<tr class='infoBar'>
-		<td>
+		<td colspan='2'>
 			<img src='img/clock.png'></img>
 			<span id='seconds'></span>
-		</td>
-		<td colspan='2' align='right'>
-			<img src='img/mine.png'></img>
+            &nbsp;
+            <img src='img/mine.png'></img>
 			<span id='mines'></span>
 		</td>
+		<td></td>
 	</tr>
 	<tr id='cells' oncontextmenu='return false'>
 		<td colspan='3'>
@@ -414,15 +426,15 @@ body { background-color:azure; }
 
 <table id='settingsContainer' style='display: none'>
 	<tr>
-		<td>rows:</td>
+		<td>Rows <span id='constraint_rows_label'></span>:</td>
 		<td><input id='xSize' value='5'></input></td>
 	</tr>
 	<tr>
-		<td>columns:</td>
+		<td>Columns <span id='constraint_cols_label'></span>:</td>
 		<td><input id='ySize' value='5'></input></td>
 	</tr>
 	<tr>
-		<td>mines:</td>
+		<td>Mines <span id='constraint_mines_label'></span>:</td>
 		<td><input id='minesCount' value='5'></input></td>
 	</tr>
 	<tr>
